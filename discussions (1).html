@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discussions — Conjecture Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{--bg:#09090f;--bg2:#0f0e18;--bg3:#13121e;--bg4:#1a1828;--border:rgba(120,110,200,0.12);--border2:rgba(120,110,200,0.22);--purple:#7c6ef7;--purple2:#a99df8;--teal:#2dd4a0;--amber:#f5a623;--red:#f05454;--text:#ece9ff;--text2:#9892c0;--text3:#5c567a;--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;--body:'DM Sans',sans-serif;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+    canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.35;}
+    .orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;}
+    .orb1{width:500px;height:500px;background:rgba(124,110,247,0.06);top:-100px;right:-100px;}
+    .orb2{width:350px;height:350px;background:rgba(45,212,160,0.04);bottom:100px;left:-80px;}
+    .above{position:relative;z-index:2;}
+
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(9,9,15,0.8);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border);}
+    .nav-logo{font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:6px;}
+    .nav-logo span{color:var(--purple);}
+    .logo-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    .nav-links{display:flex;align-items:center;gap:28px;}
+    .nav-links a{color:var(--text2);font-size:14px;text-decoration:none;transition:color 0.2s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--text);}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .btn-post{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-family:var(--body);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;}
+    .btn-post:hover{background:#8f82f9;}
+    .nav-av{width:34px;height:34px;border-radius:50%;background:rgba(124,110,247,0.2);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--purple2);cursor:pointer;}
+
+    .page{padding:88px 48px 60px;max-width:1200px;margin:0 auto;}
+
+    .page-header{margin-bottom:32px;}
+    .page-title{font-family:var(--display);font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;}
+    .page-sub{font-size:14px;color:var(--text2);}
+
+    /* SEARCH + FILTERS */
+    .toolbar{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center;}
+    .search-box{flex:1;min-width:220px;position:relative;}
+    .search-box input{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:10px 14px 10px 38px;font-size:14px;color:var(--text);font-family:var(--body);outline:none;transition:border-color 0.2s;}
+    .search-box input:focus{border-color:var(--purple);}
+    .search-box input::placeholder{color:var(--text3);}
+    .search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;}
+    .filter-select{background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--text2);font-family:var(--body);outline:none;cursor:pointer;}
+    .filter-select:focus{border-color:var(--purple);}
+
+    .topic-tabs{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+    .topic-tab{padding:7px 14px;border-radius:100px;font-size:12px;cursor:pointer;transition:all 0.2s;border:0.5px solid var(--border);color:var(--text3);font-family:var(--mono);}
+    .topic-tab:hover{border-color:var(--border2);color:var(--text2);}
+    .topic-tab.active{background:rgba(124,110,247,0.12);border-color:rgba(124,110,247,0.35);color:var(--purple2);}
+
+    /* LAYOUT */
+    .content{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start;}
+    @media(max-width:900px){.content{grid-template-columns:1fr;}}
+
+    /* THREAD LIST */
+    .thread-list{display:flex;flex-direction:column;gap:12px;}
+    .thread-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:16px;padding:20px 22px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;text-decoration:none;display:block;color:inherit;}
+    .thread-card:hover{border-color:var(--border2);transform:translateX(3px);}
+    .thread-card::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;border-radius:3px 0 0 3px;opacity:0;transition:opacity 0.2s;}
+    .thread-card:hover::before{opacity:1;}
+    .tc-p::before{background:var(--purple);}
+    .tc-t::before{background:var(--teal);}
+    .tc-a::before{background:var(--amber);}
+    .tc-r::before{background:var(--red);}
+
+    .tc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
+    .tc-title{font-size:15px;font-weight:500;color:var(--text);line-height:1.4;flex:1;}
+    .tc-tags{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;}
+    .tag{font-size:10px;padding:3px 8px;border-radius:100px;font-family:var(--mono);}
+    .tag-p{background:rgba(124,110,247,0.1);color:var(--purple2);border:0.5px solid rgba(124,110,247,0.2);}
+    .tag-t{background:rgba(45,212,160,0.08);color:var(--teal);border:0.5px solid rgba(45,212,160,0.2);}
+    .tag-a{background:rgba(245,166,35,0.08);color:var(--amber);border:0.5px solid rgba(245,166,35,0.2);}
+    .tag-r{background:rgba(240,84,84,0.08);color:var(--red);border:0.5px solid rgba(240,84,84,0.2);}
+    .tag-hot{background:rgba(240,84,84,0.1);color:var(--red);border:0.5px solid rgba(240,84,84,0.2);}
+
+    .tc-preview{font-size:13px;color:var(--text3);line-height:1.5;margin-bottom:12px;font-family:var(--mono);}
+    .tc-footer{display:flex;align-items:center;justify-content:space-between;}
+    .tc-meta{display:flex;gap:14px;}
+    .tc-stat{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px;}
+    .tc-author{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;}
+    .mini-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;}
+    .ma-p{background:rgba(124,110,247,0.2);color:var(--purple2);}
+    .ma-t{background:rgba(45,212,160,0.15);color:var(--teal);}
+    .ma-a{background:rgba(245,166,35,0.15);color:var(--amber);}
+    .ma-r{background:rgba(240,84,84,0.15);color:var(--red);}
+
+    /* SIDEBAR */
+    .sidebar{display:flex;flex-direction:column;gap:16px;}
+    .side-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:16px;padding:20px;}
+    .side-title{font-family:var(--display);font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .side-title i{color:var(--purple);font-size:14px;}
+
+    .potd-mini{background:var(--bg);border:0.5px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;}
+    .potd-mini::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--teal));}
+    .potd-mini-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;}
+    .potd-mini-math{font-family:var(--mono);font-size:11px;color:var(--text3);line-height:1.5;}
+    .btn-potd{width:100%;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-family:var(--body);font-weight:500;cursor:pointer;transition:all 0.2s;}
+    .btn-potd:hover{background:#8f82f9;}
+
+    .top-user{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);}
+    .top-user:last-child{border-bottom:none;}
+    .tu-rank{font-family:var(--mono);font-size:11px;color:var(--text3);width:18px;}
+    .tu-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;}
+    .tu-info{flex:1;}
+    .tu-name{font-size:13px;color:var(--text);font-weight:500;}
+    .tu-pts{font-size:11px;color:var(--text3);}
+    .tu-badge{font-size:10px;padding:2px 7px;border-radius:100px;}
+
+    .room-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer;}
+    .room-item:last-child{border-bottom:none;}
+    .room-item:hover .ri-name{color:var(--purple2);}
+    .ri-left{display:flex;align-items:center;gap:8px;}
+    .ri-dot{width:8px;height:8px;border-radius:50%;}
+    .ri-name{font-size:13px;color:var(--text2);transition:color 0.2s;}
+    .ri-count{font-size:11px;color:var(--text3);}
+
+    .pagination{display:flex;gap:6px;justify-content:center;margin-top:24px;}
+    .pg-btn{width:34px;height:34px;border-radius:8px;border:0.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-family:var(--body);}
+    .pg-btn:hover{border-color:var(--border2);color:var(--text);}
+    .pg-btn.active{background:var(--purple);color:#fff;border-color:var(--purple);}
+  </style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<canvas id="mathCanvas"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span>C</span>onjecture Hub <span class="logo-dot"></span></a>
+  <div class="nav-links">
+    <a href="discussions.html" class="active">Discuss</a>
+    <a href="#">Problems</a>
+    <a href="#">Rooms</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-post" onclick="window.location.href='problem.html'"><i class="fa-solid fa-plus"></i> New post</button>
+    <div class="nav-av" onclick="window.location.href='profile.html'">AT</div>
+  </div>
+</nav>
+
+<div class="page above">
+  <div class="page-header">
+    <div class="page-title">Discussions</div>
+    <div class="page-sub">Browse problems, join threads, share your approach</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Search problems, topics, keywords..."/>
+    </div>
+    <select class="filter-select">
+      <option>All difficulties</option>
+      <option>Beginner</option>
+      <option>Intermediate</option>
+      <option>Advanced</option>
+      <option>Elite</option>
+    </select>
+    <select class="filter-select">
+      <option>Most recent</option>
+      <option>Most replies</option>
+      <option>Most viewed</option>
+      <option>Unanswered</option>
+    </select>
+  </div>
+
+  <div class="topic-tabs">
+    <div class="topic-tab active">All topics</div>
+    <div class="topic-tab">Number Theory</div>
+    <div class="topic-tab">Geometry</div>
+    <div class="topic-tab">Algebra</div>
+    <div class="topic-tab">Combinatorics</div>
+    <div class="topic-tab">Analysis</div>
+    <div class="topic-tab">Logic</div>
+    <div class="topic-tab">Unanswered</div>
+  </div>
+
+  <div class="content">
+    <div>
+      <div class="thread-list">
+        <a href="problem.html" class="thread-card tc-p">
+          <div class="tc-top">
+            <div class="tc-title">Prove that for all primes p > 3, p² + 2 is never prime</div>
+            <div class="tc-tags"><span class="tag tag-p">Number Theory</span><span class="tag tag-hot">🔥 Hot</span></div>
+          </div>
+          <div class="tc-preview">Consider p mod 3. Since p > 3 is prime, p ≡ 1 or 2 (mod 3), so p² ≡ 1 (mod 3)...</div>
+          <div class="tc-footer">
+            <div class="tc-meta">
+              <span class="tc-stat"><i class="fa-regular fa-comment"></i> 31</span>
+              <span class="tc-stat"><i class="fa-regular fa-eye"></i> 412</span>
+              <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> 47</span>
+              <span class="tc-stat"><i class="fa-regular fa-clock"></i> 2h ago</span>
+            </div>
+            <div class="tc-author"><div class="mini-av ma-p">AK</div> anshuman_k</div>
+          </div>
+        </a>
+
+        <a href="problem.html" class="thread-card tc-t">
+          <div class="tc-top">
+            <div class="tc-title">In △ABC, angle bisector from A meets BC at D. Prove BD/DC = AB/AC</div>
+            <div class="tc-tags"><span class="tag tag-t">Geometry</span></div>
+          </div>
+          <div class="tc-preview">Using the sine rule in triangles ABD and ACD, we get the ratio directly from the areas...</div>
+          <div class="tc-footer">
+            <div class="tc-meta">
+              <span class="tc-stat"><i class="fa-regular fa-comment"></i> 14</span>
+              <span class="tc-stat"><i class="fa-regular fa-eye"></i> 287</span>
+              <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> 23</span>
+              <span class="tc-stat"><i class="fa-regular fa-clock"></i> 45m ago</span>
+            </div>
+            <div class="tc-author"><div class="mini-av ma-t">SR</div> sara_r</div>
+          </div>
+        </a>
+
+        <a href="problem.html" class="thread-card tc-a">
+          <div class="tc-top">
+            <div class="tc-title">How many arrangements of 1..n have no two adjacent elements differing by more than 2?</div>
+            <div class="tc-tags"><span class="tag tag-a">Combinatorics</span><span class="tag tag-hot">🔥 Hot</span></div>
+          </div>
+          <div class="tc-preview">DP approach: let f(n,k) be the number of valid arrangements ending in k. Base: f(1,1)=1...</div>
+          <div class="tc-footer">
+            <div class="tc-meta">
+              <span class="tc-stat"><i class="fa-regular fa-comment"></i> 42</span>
+              <span class="tc-stat"><i class="fa-regular fa-eye"></i> 891</span>
+              <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> 65</span>
+              <span class="tc-stat"><i class="fa-regular fa-clock"></i> 1h ago</span>
+            </div>
+            <div class="tc-author"><div class="mini-av ma-a">TL</div> tanveer_l</div>
+          </div>
+        </a>
+
+        <a href="problem.html" class="thread-card tc-r">
+          <div class="tc-top">
+            <div class="tc-title">Prove the AM-GM inequality using Cauchy forward-backward induction</div>
+            <div class="tc-tags"><span class="tag tag-r">Algebra</span></div>
+          </div>
+          <div class="tc-preview">The key insight: prove it for n=2 first. Then show n → 2n, and 2n → 2n-1 to cover all n...</div>
+          <div class="tc-footer">
+            <div class="tc-meta">
+              <span class="tc-stat"><i class="fa-regular fa-comment"></i> 19</span>
+              <span class="tc-stat"><i class="fa-regular fa-eye"></i> 534</span>
+              <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> 38</span>
+              <span class="tc-stat"><i class="fa-regular fa-clock"></i> 3h ago</span>
+            </div>
+            <div class="tc-author"><div class="mini-av ma-r">NV</div> nikhil_v</div>
+          </div>
+        </a>
+
+        <a href="problem.html" class="thread-card tc-p">
+          <div class="tc-top">
+            <div class="tc-title">Does there exist n such that n! + 1 is a perfect square? (Brocard's Problem)</div>
+            <div class="tc-tags"><span class="tag tag-p">Number Theory</span></div>
+          </div>
+          <div class="tc-preview">Known solutions: n=4,5,7. Proof of finiteness is open. Here's what we know computationally...</div>
+          <div class="tc-footer">
+            <div class="tc-meta">
+              <span class="tc-stat"><i class="fa-regular fa-comment"></i> 67</span>
+              <span class="tc-stat"><i class="fa-regular fa-eye"></i> 1.2k</span>
+              <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> 94</span>
+              <span class="tc-stat"><i class="fa-regular fa-clock"></i> 5h ago</span>
+            </div>
+            <div class="tc-author"><div class="mini-av ma-p">EF</div> euler_fan</div>
+          </div>
+        </a>
+
+        <a href="problem.html" class="thread-card tc-t">
+          <div class="tc-top">
+            <div class="tc-title">Why does ∑(1/n²) = π²/6? Intuitive explanations for the Basel problem</div>
+            <div class="tc-tags"><span class="tag tag-t">Analysis</span><span class="tag tag-hot">🔥 Hot</span></div>
+          </div>
+          <div class="tc-preview">Euler's proof uses the sine product formula. There's also a beautiful probabilistic interpretation...</div>
+          <div class="tc-footer">
+            <div class="tc-meta">
+              <span class="tc-stat"><i class="fa-regular fa-comment"></i> 38</span>
+              <span class="tc-stat"><i class="fa-regular fa-eye"></i> 2.1k</span>
+              <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> 112</span>
+              <span class="tc-stat"><i class="fa-regular fa-clock"></i> 8h ago</span>
+            </div>
+            <div class="tc-author"><div class="mini-av ma-t">HI</div> hilbert_fan</div>
+          </div>
+        </a>
+
+        <a href="problem.html" class="thread-card tc-a">
+          <div class="tc-top">
+            <div class="tc-title">Find all functions f: ℝ→ℝ satisfying f(x+y) = f(x) + f(y) for all x,y (Cauchy FE)</div>
+            <div class="tc-tags"><span class="tag tag-r">Algebra</span></div>
+          </div>
+          <div class="tc-preview">Without continuity, there are pathological solutions. With measurability, only f(x)=cx works...</div>
+          <div class="tc-footer">
+            <div class="tc-meta">
+              <span class="tc-stat"><i class="fa-regular fa-comment"></i> 25</span>
+              <span class="tc-stat"><i class="fa-regular fa-eye"></i> 670</span>
+              <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> 51</span>
+              <span class="tc-stat"><i class="fa-regular fa-clock"></i> 12h ago</span>
+            </div>
+            <div class="tc-author"><div class="mini-av ma-a">PM</div> priya_m</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="pagination">
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">2</button>
+        <button class="pg-btn">3</button>
+        <button class="pg-btn">...</button>
+        <button class="pg-btn">24</button>
+        <button class="pg-btn"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-flame"></i> Problem of the Day</div>
+        <div class="potd-mini">
+          <div class="potd-mini-title">Find all n ≥ 1 such that...</div>
+          <div class="potd-mini-math">a₁+...+aₙ = n² and<br>1/a₁+...+1/aₙ = 1</div>
+        </div>
+        <button class="btn-potd" onclick="window.location.href='problem.html'">Join discussion →</button>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-trophy"></i> Top contributors</div>
+        <div class="top-user">
+          <div class="tu-rank">#1</div>
+          <div class="tu-av ma-p" style="width:28px;height:28px;font-size:10px">AK</div>
+          <div class="tu-info"><div class="tu-name">anshuman_k</div><div class="tu-pts">4,821 pts</div></div>
+          <span class="tu-badge tag-p">RMO</span>
+        </div>
+        <div class="top-user">
+          <div class="tu-rank">#2</div>
+          <div class="tu-av ma-t" style="width:28px;height:28px;font-size:10px">SR</div>
+          <div class="tu-info"><div class="tu-name">sara_r</div><div class="tu-pts">3,940 pts</div></div>
+          <span class="tu-badge tag-t">AIME</span>
+        </div>
+        <div class="top-user">
+          <div class="tu-rank">#3</div>
+          <div class="tu-av ma-a" style="width:28px;height:28px;font-size:10px">TL</div>
+          <div class="tu-info"><div class="tu-name">tanveer_l</div><div class="tu-pts">3,120 pts</div></div>
+          <span class="tu-badge tag-a">IMO</span>
+        </div>
+        <div class="top-user">
+          <div class="tu-rank">#4</div>
+          <div class="tu-av ma-r" style="width:28px;height:28px;font-size:10px">NV</div>
+          <div class="tu-info"><div class="tu-name">nikhil_v</div><div class="tu-pts">2,890 pts</div></div>
+        </div>
+        <div class="top-user">
+          <div class="tu-rank">#5</div>
+          <div class="tu-av ma-p" style="width:28px;height:28px;font-size:10px">EF</div>
+          <div class="tu-info"><div class="tu-name">euler_fan</div><div class="tu-pts">2,540 pts</div></div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-layer-group"></i> Rooms</div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--purple)"></div><div class="ri-name">Olympiad Elite</div></div><div class="ri-count">38 online</div></div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--teal)"></div><div class="ri-name">National Level</div></div><div class="ri-count">61 online</div></div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--amber)"></div><div class="ri-name">Intermediate</div></div><div class="ri-count">94 online</div></div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--red)"></div><div class="ri-name">Beginners</div></div><div class="ri-count">112 online</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas=document.getElementById('mathCanvas');const ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+const syms=['∑','∫','√','π','∞','α','β','γ','θ','λ','φ','Δ','Σ','ℝ','⟹','∀','∃','≠','≤','≥'];
+const cols=['rgba(124,110,247,','rgba(169,157,248,','rgba(45,212,160,'];
+const ps=Array.from({length:35},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,sym:syms[Math.floor(Math.random()*syms.length)],size:10+Math.random()*11,speed:0.12+Math.random()*0.25,op:0.03+Math.random()*0.07,col:cols[Math.floor(Math.random()*cols.length)],drift:(Math.random()-0.5)*0.15}));
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ps.forEach(p=>{ctx.font=`${p.size}px JetBrains Mono,monospace`;ctx.fillStyle=p.col+p.op+')';ctx.fillText(p.sym,p.x,p.y);p.y-=p.speed;p.x+=p.drift;if(p.y<-20){p.y=canvas.height+20;p.x=Math.random()*canvas.width;p.sym=syms[Math.floor(Math.random()*syms.length)];}});requestAnimationFrame(draw);}
+draw();
+document.querySelectorAll('.topic-tab').forEach(t=>{t.addEventListener('click',function(){document.querySelectorAll('.topic-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');});});
+</script>
+</body>
+</html>

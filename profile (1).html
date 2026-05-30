@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile — Conjecture Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{--bg:#09090f;--bg2:#0f0e18;--bg3:#13121e;--bg4:#1a1828;--border:rgba(120,110,200,0.12);--border2:rgba(120,110,200,0.22);--purple:#7c6ef7;--purple2:#a99df8;--teal:#2dd4a0;--amber:#f5a623;--red:#f05454;--text:#ece9ff;--text2:#9892c0;--text3:#5c567a;--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;--body:'DM Sans',sans-serif;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+    canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.3;}
+    .orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;}
+    .orb1{width:500px;height:500px;background:rgba(124,110,247,0.07);top:-100px;left:50%;transform:translateX(-50%);}
+    .above{position:relative;z-index:2;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(9,9,15,0.8);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border);}
+    .nav-logo{font-family:var(--display);font-size:20px;font-weight:700;color:var(--text);text-decoration:none;}
+    .nav-logo span{color:var(--purple);}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .nav-back{font-size:13px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:6px;}
+    .nav-back:hover{color:var(--text);}
+
+    .page{padding:88px 48px 60px;max-width:960px;margin:0 auto;}
+
+    /* PROFILE HEADER */
+    .profile-header{background:var(--bg3);border:0.5px solid var(--border2);border-radius:24px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;}
+    .profile-header::before{content:'';position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(180deg,rgba(124,110,247,0.08),transparent);}
+    .avatar-wrap{position:relative;flex-shrink:0;}
+    .big-av{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(124,110,247,0.4),rgba(45,212,160,0.3));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:28px;font-weight:700;color:var(--text);}
+    .online-ring{position:absolute;bottom:3px;right:3px;width:14px;height:14px;border-radius:50%;background:var(--teal);border:2px solid var(--bg3);}
+    .profile-info{flex:1;}
+    .profile-name{font-family:var(--display);font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-0.3px;}
+    .profile-handle{font-family:var(--mono);font-size:13px;color:var(--text3);margin-bottom:12px;}
+    .profile-bio{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:14px;max-width:480px;}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+    .badge{display:flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:100px;font-family:var(--mono);}
+    .badge-ioqm{background:rgba(124,110,247,0.1);color:var(--purple2);border:0.5px solid rgba(124,110,247,0.25);}
+    .badge-rmo{background:rgba(45,212,160,0.08);color:var(--teal);border:0.5px solid rgba(45,212,160,0.2);}
+    .badge-jee{background:rgba(245,166,35,0.08);color:var(--amber);border:0.5px solid rgba(245,166,35,0.2);}
+    .badge-founder{background:rgba(240,84,84,0.08);color:var(--red);border:0.5px solid rgba(240,84,84,0.2);}
+    .profile-loc{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;}
+    .profile-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+    .btn-edit{background:transparent;color:var(--text2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 16px;font-size:13px;font-family:var(--body);cursor:pointer;transition:all 0.2s;}
+    .btn-edit:hover{border-color:var(--purple);color:var(--purple2);}
+
+    /* STATS ROW */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+    .stat-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:18px;text-align:center;}
+    .stat-num{font-family:var(--display);font-size:26px;font-weight:700;color:var(--text);}
+    .stat-num.purple{color:var(--purple);}
+    .stat-num.teal{color:var(--teal);}
+    .stat-num.amber{color:var(--amber);}
+    .stat-label{font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono);letter-spacing:0.3px;}
+
+    /* CONTENT GRID */
+    .content-grid{display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;}
+    @media(max-width:800px){.content-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
+
+    /* TABS */
+    .tabs{display:flex;gap:0;background:var(--bg3);border:0.5px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px;width:fit-content;}
+    .tab{padding:8px 18px;border-radius:9px;font-size:13px;cursor:pointer;transition:all 0.2s;color:var(--text3);font-family:var(--body);}
+    .tab.active{background:var(--bg4);color:var(--text);border:0.5px solid var(--border2);}
+
+    /* ACTIVITY LIST */
+    .activity-list{display:flex;flex-direction:column;gap:10px;}
+    .activity-item{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;color:inherit;}
+    .activity-item:hover{border-color:var(--border2);}
+    .ai-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
+    .ai-title{font-size:14px;color:var(--text);font-weight:500;line-height:1.4;flex:1;}
+    .ai-tag{font-size:10px;padding:3px 8px;border-radius:100px;font-family:var(--mono);white-space:nowrap;}
+    .at-p{background:rgba(124,110,247,0.1);color:var(--purple2);border:0.5px solid rgba(124,110,247,0.2);}
+    .at-t{background:rgba(45,212,160,0.08);color:var(--teal);border:0.5px solid rgba(45,212,160,0.2);}
+    .at-a{background:rgba(245,166,35,0.08);color:var(--amber);border:0.5px solid rgba(245,166,35,0.2);}
+    .at-r{background:rgba(240,84,84,0.08);color:var(--red);border:0.5px solid rgba(240,84,84,0.2);}
+    .ai-meta{display:flex;gap:12px;font-size:11px;color:var(--text3);}
+    .ai-meta span{display:flex;align-items:center;gap:4px;}
+
+    /* SIDEBAR */
+    .side-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+    .side-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+    .side-title i{color:var(--purple);font-size:12px;}
+
+    /* HEATMAP */
+    .heatmap{display:grid;grid-template-columns:repeat(26,1fr);gap:2px;margin-bottom:8px;}
+    .hm-cell{aspect-ratio:1;border-radius:2px;background:var(--bg4);}
+    .hm-1{background:rgba(124,110,247,0.2);}
+    .hm-2{background:rgba(124,110,247,0.4);}
+    .hm-3{background:rgba(124,110,247,0.65);}
+    .hm-4{background:rgba(124,110,247,0.9);}
+    .hm-label{font-size:10px;color:var(--text3);font-family:var(--mono);}
+
+    .skill-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .skill-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0;}
+    .skill-bar{flex:1;height:4px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+    .skill-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+    .skill-pct{font-size:11px;color:var(--text3);font-family:var(--mono);width:32px;text-align:right;}
+
+    .recent-badge{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);}
+    .recent-badge:last-child{border-bottom:none;}
+    .rb-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+    .rb-info .rb-name{font-size:13px;color:var(--text);font-weight:500;}
+    .rb-info .rb-desc{font-size:11px;color:var(--text3);}
+  </style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<canvas id="mathCanvas"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span>C</span>onjecture Hub</a>
+  <div class="nav-right">
+    <a href="discussions.html" class="nav-back"><i class="fa-solid fa-arrow-left"></i> Discussions</a>
+  </div>
+</nav>
+
+<div class="page above">
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="avatar-wrap">
+      <div class="big-av">AT</div>
+      <div class="online-ring"></div>
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">Anshuman Tiwari</div>
+      <div class="profile-handle">@anshuman_tiwari · Member since 2025</div>
+      <div class="profile-bio">2× IOQM qualifier · RMO qualified · JEE Advanced 2025 · Founder of Conjecture Hub. Passionate about number theory and olympiad mathematics.</div>
+      <div class="badges">
+        <span class="badge badge-ioqm">🏅 2× IOQM</span>
+        <span class="badge badge-rmo">🛡 RMO Qualified</span>
+        <span class="badge badge-jee">⚡ JEE Adv 2025</span>
+        <span class="badge badge-founder">👑 Founder</span>
+      </div>
+      <div class="profile-loc"><i class="fa-solid fa-location-dot" style="color:var(--purple2)"></i> India · Joined May 2025</div>
+    </div>
+    <div class="profile-actions">
+      <button class="btn-edit"><i class="fa-regular fa-pen-to-square"></i> Edit profile</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num purple">4,821</div><div class="stat-label">Reputation pts</div></div>
+    <div class="stat-card"><div class="stat-num teal">142</div><div class="stat-label">Problems solved</div></div>
+    <div class="stat-card"><div class="stat-num amber">89</div><div class="stat-label">Solutions posted</div></div>
+    <div class="stat-card"><div class="stat-num">31</div><div class="stat-label">Best answers</div></div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="content-grid">
+    <div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(0,this)">Activity</div>
+        <div class="tab" onclick="switchTab(1,this)">Solutions</div>
+        <div class="tab" onclick="switchTab(2,this)">Bookmarks</div>
+      </div>
+
+      <div id="tab-0" class="activity-list">
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top">
+            <div class="ai-title">Prove that for all primes p > 3, p² + 2 is never prime</div>
+            <span class="ai-tag at-p">Number Theory</span>
+          </div>
+          <div class="ai-meta">
+            <span><i class="fa-solid fa-pen"></i> Posted</span>
+            <span><i class="fa-regular fa-comment"></i> 31 replies</span>
+            <span><i class="fa-solid fa-arrow-up"></i> 47 upvotes</span>
+            <span><i class="fa-regular fa-clock"></i> 2h ago</span>
+          </div>
+        </a>
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top">
+            <div class="ai-title">Basel problem ∑(1/n²) = π²/6 — my proof using Fourier series</div>
+            <span class="ai-tag at-t">Analysis</span>
+          </div>
+          <div class="ai-meta">
+            <span><i class="fa-solid fa-check-circle" style="color:var(--teal)"></i> Best answer</span>
+            <span><i class="fa-solid fa-arrow-up"></i> 34 upvotes</span>
+            <span><i class="fa-regular fa-clock"></i> 1 day ago</span>
+          </div>
+        </a>
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top">
+            <div class="ai-title">Cauchy-Schwarz inequality — 5 different proofs explained</div>
+            <span class="ai-tag at-r">Algebra</span>
+          </div>
+          <div class="ai-meta">
+            <span><i class="fa-solid fa-pen"></i> Posted</span>
+            <span><i class="fa-regular fa-comment"></i> 19 replies</span>
+            <span><i class="fa-solid fa-arrow-up"></i> 58 upvotes</span>
+            <span><i class="fa-regular fa-clock"></i> 3 days ago</span>
+          </div>
+        </a>
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top">
+            <div class="ai-title">Find all f: ℝ→ℝ with f(x² + f(y)) = y + f(x)² for all x,y ∈ ℝ</div>
+            <span class="ai-tag at-r">Algebra</span>
+          </div>
+          <div class="ai-meta">
+            <span><i class="fa-solid fa-check-circle" style="color:var(--teal)"></i> Best answer</span>
+            <span><i class="fa-solid fa-arrow-up"></i> 41 upvotes</span>
+            <span><i class="fa-regular fa-clock"></i> 5 days ago</span>
+          </div>
+        </a>
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top">
+            <div class="ai-title">In a triangle, prove that the sum of angles is always 180° using parallel lines</div>
+            <span class="ai-tag at-t">Geometry</span>
+          </div>
+          <div class="ai-meta">
+            <span><i class="fa-solid fa-pen"></i> Posted</span>
+            <span><i class="fa-regular fa-comment"></i> 7 replies</span>
+            <span><i class="fa-solid fa-arrow-up"></i> 12 upvotes</span>
+            <span><i class="fa-regular fa-clock"></i> 1 week ago</span>
+          </div>
+        </a>
+      </div>
+
+      <div id="tab-1" class="activity-list" style="display:none">
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top"><div class="ai-title">AM-HM approach to IMO 2023 P2</div><span class="ai-tag at-p">Best answer</span></div>
+          <div class="ai-meta"><span><i class="fa-solid fa-arrow-up"></i> 34</span><span><i class="fa-regular fa-clock"></i> 2h ago</span></div>
+        </a>
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top"><div class="ai-title">Vieta jumping proof for a classic number theory problem</div><span class="ai-tag at-p">Best answer</span></div>
+          <div class="ai-meta"><span><i class="fa-solid fa-arrow-up"></i> 27</span><span><i class="fa-regular fa-clock"></i> 2 days ago</span></div>
+        </a>
+      </div>
+
+      <div id="tab-2" class="activity-list" style="display:none">
+        <a href="problem.html" class="activity-item">
+          <div class="ai-top"><div class="ai-title">Why does ∑(1/n²) = π²/6? (Basel problem)</div><span class="ai-tag at-t">Analysis</span></div>
+          <div class="ai-meta"><span><i class="fa-regular fa-bookmark"></i> Bookmarked</span><span><i class="fa-regular fa-clock"></i> 8h ago</span></div>
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <!-- ACTIVITY HEATMAP -->
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-chart-simple"></i> Activity this year</div>
+        <div class="heatmap" id="heatmap"></div>
+        <div class="hm-label" style="margin-top:6px">142 contributions · last 26 weeks</div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-brain"></i> Topic strengths</div>
+        <div class="skill-row"><div class="skill-label">Number Theory</div><div class="skill-bar"><div class="skill-fill" style="width:92%;background:var(--purple)"></div></div><div class="skill-pct">92%</div></div>
+        <div class="skill-row"><div class="skill-label">Algebra</div><div class="skill-bar"><div class="skill-fill" style="width:80%;background:var(--teal)"></div></div><div class="skill-pct">80%</div></div>
+        <div class="skill-row"><div class="skill-label">Combinatorics</div><div class="skill-bar"><div class="skill-fill" style="width:74%;background:var(--amber)"></div></div><div class="skill-pct">74%</div></div>
+        <div class="skill-row"><div class="skill-label">Geometry</div><div class="skill-bar"><div class="skill-fill" style="width:65%;background:var(--purple2)"></div></div><div class="skill-pct">65%</div></div>
+        <div class="skill-row"><div class="skill-label">Analysis</div><div class="skill-bar"><div class="skill-fill" style="width:55%;background:var(--red)"></div></div><div class="skill-pct">55%</div></div>
+      </div>
+
+      <!-- RECENT BADGES -->
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-medal"></i> Recent badges</div>
+        <div class="recent-badge"><div class="rb-icon" style="background:rgba(124,110,247,0.15)">🏆</div><div class="rb-info"><div class="rb-name">Problem Setter</div><div class="rb-desc">Posted 50+ problems</div></div></div>
+        <div class="recent-badge"><div class="rb-icon" style="background:rgba(45,212,160,0.12)">⭐</div><div class="rb-info"><div class="rb-name">Best Answer ×10</div><div class="rb-desc">10 best answers given</div></div></div>
+        <div class="recent-badge"><div class="rb-icon" style="background:rgba(245,166,35,0.12)">🔥</div><div class="rb-info"><div class="rb-name">On Fire</div><div class="rb-desc">7-day activity streak</div></div></div>
+        <div class="recent-badge"><div class="rb-icon" style="background:rgba(240,84,84,0.1)">👑</div><div class="rb-info"><div class="rb-name">Founder</div><div class="rb-desc">Created Conjecture Hub</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(idx,el){document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');['tab-0','tab-1','tab-2'].forEach((id,i)=>{document.getElementById(id).style.display=i===idx?'flex':'none';document.getElementById(id).style.flexDirection=i===idx?'column':'';});}
+
+// HEATMAP
+const hm=document.getElementById('heatmap');
+for(let i=0;i<182;i++){const d=document.createElement('div');const v=Math.random();d.className='hm-cell'+(v>0.85?' hm-4':v>0.65?' hm-3':v>0.45?' hm-2':v>0.3?' hm-1':'');hm.appendChild(d);}
+
+const canvas=document.getElementById('mathCanvas');const ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+const syms=['∑','∫','π','∞','α','β','θ','λ','Δ','ℝ','⟹','∀'];
+const cols=['rgba(124,110,247,','rgba(169,157,248,','rgba(45,212,160,'];
+const ps=Array.from({length:25},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,sym:syms[Math.floor(Math.random()*syms.length)],size:9+Math.random()*10,speed:0.1+Math.random()*0.2,op:0.025+Math.random()*0.055,col:cols[Math.floor(Math.random()*cols.length)],drift:(Math.random()-0.5)*0.12}));
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ps.forEach(p=>{ctx.font=`${p.size}px JetBrains Mono,monospace`;ctx.fillStyle=p.col+p.op+')';ctx.fillText(p.sym,p.x,p.y);p.y-=p.speed;p.x+=p.drift;if(p.y<-20){p.y=canvas.height+20;p.x=Math.random()*canvas.width;p.sym=syms[Math.floor(Math.random()*syms.length)];}});requestAnimationFrame(draw);}
+draw();
+</script>
+</body>
+</html>
