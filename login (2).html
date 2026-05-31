@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — Conjecture Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{--bg:#09090f;--bg3:#13121e;--bg4:#1a1828;--border:rgba(120,110,200,0.12);--border2:rgba(120,110,200,0.28);--purple:#7c6ef7;--purple2:#a99df8;--teal:#2dd4a0;--red:#f05454;--text:#ece9ff;--text2:#9892c0;--text3:#5c567a;--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;--body:'DM Sans',sans-serif;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 20px 20px;}
+    canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.45;}
+    .orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;}
+    .orb1{width:500px;height:500px;background:rgba(124,110,247,0.07);top:-150px;left:-100px;}
+    .orb2{width:380px;height:380px;background:rgba(45,212,160,0.05);bottom:0;right:-80px;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;background:rgba(9,9,15,0.8);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border);}
+    .nav-logo{font-family:var(--display);font-size:19px;font-weight:700;color:var(--text);text-decoration:none;}
+    .nav-logo span{color:var(--purple);}
+    .back-btn{font-size:13px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s;}
+    .back-btn:hover{color:var(--text);}
+    .card{position:relative;z-index:2;background:var(--bg3);border:0.5px solid var(--border2);border-radius:22px;padding:36px;width:100%;max-width:410px;}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent);border-radius:22px 22px 0 0;}
+    .card-logo{text-align:center;font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:24px;text-decoration:none;display:block;color:var(--text);}
+    .card-logo span{color:var(--purple);}
+    .tabs{display:flex;background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:3px;margin-bottom:24px;}
+    .tab{flex:1;padding:8px;text-align:center;font-size:13px;cursor:pointer;border-radius:8px;transition:all 0.2s;color:var(--text3);}
+    .tab.active{background:var(--bg3);color:var(--text);border:0.5px solid var(--border2);}
+    .google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--bg4);color:var(--text);border:0.5px solid var(--border2);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;transition:all 0.2s;margin-bottom:18px;font-family:var(--body);}
+    .google-btn:hover{background:rgba(124,110,247,0.08);border-color:var(--purple);}
+    .google-btn:disabled{opacity:0.6;cursor:not-allowed;}
+    .divider{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+    .divider-line{flex:1;height:0.5px;background:var(--border);}
+    .divider-text{font-size:11px;color:var(--text3);font-family:var(--mono);}
+    .field{margin-bottom:14px;}
+    label{display:block;font-size:11px;color:var(--text2);margin-bottom:5px;font-family:var(--mono);letter-spacing:0.3px;}
+    input[type=text],input[type=email],input[type=password]{width:100%;background:var(--bg);border:0.5px solid var(--border2);border-radius:9px;padding:11px 13px;font-size:14px;color:var(--text);font-family:var(--body);outline:none;transition:border-color 0.2s;}
+    input:focus{border-color:var(--purple);}
+    input::placeholder{color:var(--text3);}
+    .pw-wrap{position:relative;}
+    .pw-wrap input{padding-right:38px;}
+    .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;cursor:pointer;background:none;border:none;}
+    .forgot{text-align:right;margin-top:-8px;margin-bottom:14px;}
+    .forgot a{font-size:12px;color:var(--purple2);text-decoration:none;}
+    .submit-btn{width:100%;background:var(--purple);color:#fff;border:none;border-radius:9px;padding:12px;font-size:14px;font-family:var(--body);font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .submit-btn:hover{background:#8f82f9;transform:translateY(-1px);}
+    .submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+    .name-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .switch-link{text-align:center;font-size:13px;color:var(--text2);}
+    .switch-link a{color:var(--purple2);text-decoration:none;cursor:pointer;}
+    .error-msg{background:rgba(240,84,84,0.1);border:0.5px solid rgba(240,84,84,0.3);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--red);margin-bottom:14px;display:none;}
+    .success-msg{background:rgba(45,212,160,0.1);border:0.5px solid rgba(45,212,160,0.3);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--teal);margin-bottom:14px;display:none;}
+    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<canvas id="bgCanvas"></canvas>
+<nav>
+  <a href="index.html" class="nav-logo"><span>C</span>onjecture Hub</a>
+  <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back</a>
+</nav>
+
+<div class="card">
+  <a href="index.html" class="card-logo"><span>C</span>onjecture Hub</a>
+  <div class="tabs">
+    <div class="tab active" id="tab-li" onclick="showForm('login')">Log in</div>
+    <div class="tab" id="tab-su" onclick="showForm('signup')">Sign up</div>
+  </div>
+
+  <div id="error-box" class="error-msg"></div>
+  <div id="success-box" class="success-msg"></div>
+
+  <!-- LOGIN -->
+  <div id="login-form">
+    <button class="google-btn" id="google-login-btn" onclick="googleSignIn()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">or</div><div class="divider-line"></div></div>
+    <div class="field"><label>Email</label><input type="email" id="li-email" placeholder="you@example.com"/></div>
+    <div class="field"><label>Password</label><div class="pw-wrap"><input type="password" id="li-pw" placeholder="Your password"/><button class="pw-toggle" onclick="togglePw('li-pw',this)"><i class="fa-regular fa-eye"></i></button></div></div>
+    <div class="forgot"><a href="#" onclick="forgotPassword()">Forgot password?</a></div>
+    <button class="submit-btn" id="li-btn" onclick="emailLogin()">Log in</button>
+    <div class="switch-link">No account? <a onclick="showForm('signup')">Sign up free</a></div>
+  </div>
+
+  <!-- SIGNUP -->
+  <div id="signup-form" style="display:none">
+    <button class="google-btn" id="google-signup-btn" onclick="googleSignIn()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">or</div><div class="divider-line"></div></div>
+    <div class="name-row">
+      <div class="field"><label>First name</label><input type="text" id="su-fname" placeholder="Anshuman"/></div>
+      <div class="field"><label>Last name</label><input type="text" id="su-lname" placeholder="Tiwari"/></div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" id="su-email" placeholder="you@example.com"/></div>
+    <div class="field"><label>Password</label><div class="pw-wrap"><input type="password" id="su-pw" placeholder="Min. 8 characters"/><button class="pw-toggle" onclick="togglePw('su-pw',this)"><i class="fa-regular fa-eye"></i></button></div></div>
+    <button class="submit-btn" id="su-btn" onclick="emailSignup()">Create account</button>
+    <div class="switch-link">Have an account? <a onclick="showForm('login')">Log in</a></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAtawy8WOVQODnj06DT6UecS3RLgsD5vYc",
+  authDomain:"conjecture-hub.firebaseapp.com",
+  projectId:"conjecture-hub",
+  storageBucket:"conjecture-hub.firebasestorage.app",
+  messagingSenderId:"50971221247",
+  appId:"1:50971221247:web:fea10788f0efdc9279c0ca"
+});
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(u => { if(u) window.location.href='discussions.html'; });
+
+function showForm(f){
+  document.getElementById('tab-li').classList.toggle('active',f==='login');
+  document.getElementById('tab-su').classList.toggle('active',f==='signup');
+  document.getElementById('login-form').style.display=f==='login'?'block':'none';
+  document.getElementById('signup-form').style.display=f==='signup'?'block':'none';
+  clearMsg();
+}
+function showError(msg){const e=document.getElementById('error-box');e.textContent=msg;e.style.display='block';document.getElementById('success-box').style.display='none';}
+function showSuccess(msg){const e=document.getElementById('success-box');e.textContent=msg;e.style.display='block';document.getElementById('error-box').style.display='none';}
+function clearMsg(){document.getElementById('error-box').style.display='none';document.getElementById('success-box').style.display='none';}
+function setLoading(btnId,loading){const b=document.getElementById(btnId);if(loading){b.disabled=true;b.innerHTML='<div class="spinner"></div>';}else{b.disabled=false;b.innerHTML=btnId==='li-btn'?'Log in':'Create account';}}
+function togglePw(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.querySelector('i').className=i.type==='password'?'fa-regular fa-eye':'fa-regular fa-eye-slash';}
+function errMsg(code){return{'auth/email-already-in-use':'Email already registered','auth/wrong-password':'Incorrect password','auth/user-not-found':'No account with this email','auth/invalid-credential':'Incorrect email or password','auth/weak-password':'Password too weak (min 6 chars)','auth/invalid-email':'Invalid email address'}[code]||'Something went wrong. Try again.';}
+
+async function saveUser(user){
+  const ref=db.collection('users').doc(user.uid);
+  const doc=await ref.get();
+  if(!doc.exists){
+    await ref.set({uid:user.uid,displayName:user.displayName||'Anonymous',email:user.email,handle:(user.displayName||'user').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''),photoURL:user.photoURL||'',bio:'',reputation:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  }
+}
+
+async function googleSignIn(){
+  clearMsg();
+  const provider=new firebase.auth.GoogleAuthProvider();
+  try{
+    const result=await auth.signInWithPopup(provider);
+    await saveUser(result.user);
+  }catch(e){showError(errMsg(e.code)||e.message);}
+}
+
+async function emailLogin(){
+  clearMsg();
+  const email=document.getElementById('li-email').value.trim();
+  const pw=document.getElementById('li-pw').value;
+  if(!email||!pw){showError('Please fill in all fields');return;}
+  setLoading('li-btn',true);
+  try{await auth.signInWithEmailAndPassword(email,pw);}
+  catch(e){showError(errMsg(e.code));setLoading('li-btn',false);}
+}
+
+async function emailSignup(){
+  clearMsg();
+  const fname=document.getElementById('su-fname').value.trim();
+  const lname=document.getElementById('su-lname').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pw=document.getElementById('su-pw').value;
+  if(!fname||!email||!pw){showError('Please fill in all fields');return;}
+  if(pw.length<6){showError('Password must be at least 6 characters');return;}
+  setLoading('su-btn',true);
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(email,pw);
+    await cred.user.updateProfile({displayName:`${fname} ${lname}`.trim()});
+    await saveUser({...cred.user,displayName:`${fname} ${lname}`.trim()});
+  }catch(e){showError(errMsg(e.code));setLoading('su-btn',false);}
+}
+
+async function forgotPassword(){
+  const email=document.getElementById('li-email').value.trim();
+  if(!email){showError('Enter your email above first');return;}
+  try{await auth.sendPasswordResetEmail(email);showSuccess('Reset email sent! Check your inbox.');}
+  catch(e){showError(errMsg(e.code));}
+}
+
+// Canvas bg
+const cv=document.getElementById('bgCanvas');const cx=cv.getContext('2d');
+function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}resize();window.addEventListener('resize',resize);
+const syms=['∑','∫','√','π','∞','α','β','γ','δ','θ','λ','φ','ω','Δ','ℝ','⟹','∀','∃'];
+const ps=Array.from({length:38},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,s:syms[Math.floor(Math.random()*syms.length)],sz:9+Math.random()*12,sp:0.12+Math.random()*0.28,op:0.04+Math.random()*0.09,dr:(Math.random()-.5)*.16}));
+function draw(){cx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{cx.font=`${p.sz}px JetBrains Mono,monospace`;cx.fillStyle=`rgba(124,110,247,${p.op})`;cx.fillText(p.s,p.x,p.y);p.y-=p.sp;p.x+=p.dr;if(p.y<-20){p.y=cv.height+20;p.x=Math.random()*cv.width;p.s=syms[Math.floor(Math.random()*syms.length)];}});requestAnimationFrame(draw);}
+draw();
+</script>
+</body>
+</html>

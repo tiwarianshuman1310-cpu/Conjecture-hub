@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discussions — Conjecture Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{--bg:#09090f;--bg3:#13121e;--bg4:#1a1828;--border:rgba(120,110,200,0.12);--border2:rgba(120,110,200,0.22);--purple:#7c6ef7;--purple2:#a99df8;--teal:#2dd4a0;--amber:#f5a623;--red:#f05454;--text:#ece9ff;--text2:#9892c0;--text3:#5c567a;--mono:'JetBrains Mono',monospace;--display:'Syne',sans-serif;--body:'DM Sans',sans-serif;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+    canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.3;}
+    .above{position:relative;z-index:2;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:62px;display:flex;align-items:center;justify-content:space-between;background:rgba(9,9,15,0.85);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border);}
+    .nav-logo{font-family:var(--display);font-size:19px;font-weight:700;color:var(--text);text-decoration:none;}
+    .nav-logo span{color:var(--purple);}
+    .nav-links{display:flex;align-items:center;gap:28px;}
+    .nav-links a{color:var(--text2);font-size:13px;text-decoration:none;transition:color 0.2s;}
+    .nav-links a.active,.nav-links a:hover{color:var(--text);}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .post-btn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px 15px;font-size:13px;font-family:var(--body);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;}
+    .post-btn:hover{background:#8f82f9;}
+    .nav-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(124,110,247,0.4),rgba(45,212,160,0.3));border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;overflow:hidden;}
+    .nav-av img{width:100%;height:100%;object-fit:cover;}
+    .login-link{font-size:13px;color:var(--purple2);text-decoration:none;border:0.5px solid var(--border2);border-radius:8px;padding:7px 14px;transition:all 0.2s;}
+    .login-link:hover{border-color:var(--purple);}
+    .logout-btn{background:none;border:0.5px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--body);transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--border2);color:var(--text2);}
+    .page{padding:82px 40px 60px;max-width:1160px;margin:0 auto;}
+    .page-head{margin-bottom:28px;}
+    .page-title{font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px;}
+    .page-sub{font-size:14px;color:var(--text2);}
+    .toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+    .search-wrap{flex:1;min-width:200px;position:relative;}
+    .search-wrap input{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:9px;padding:9px 13px 9px 36px;font-size:14px;color:var(--text);font-family:var(--body);outline:none;transition:border-color 0.2s;}
+    .search-wrap input:focus{border-color:var(--purple);}
+    .search-wrap input::placeholder{color:var(--text3);}
+    .search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;}
+    select{background:var(--bg3);border:0.5px solid var(--border2);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text2);font-family:var(--body);outline:none;cursor:pointer;}
+    .topic-tabs{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;}
+    .ttab{padding:6px 13px;border-radius:100px;font-size:12px;cursor:pointer;transition:all 0.2s;border:0.5px solid var(--border);color:var(--text3);font-family:var(--mono);}
+    .ttab:hover{border-color:var(--border2);color:var(--text2);}
+    .ttab.active{background:rgba(124,110,247,0.1);border-color:rgba(124,110,247,0.35);color:var(--purple2);}
+    .layout{display:grid;grid-template-columns:1fr 290px;gap:20px;align-items:start;}
+    @media(max-width:880px){.layout{grid-template-columns:1fr;}.nav-links{display:none;}}
+    .thread-list{display:flex;flex-direction:column;gap:10px;}
+    .thread-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;color:inherit;position:relative;overflow:hidden;}
+    .thread-card:hover{border-color:var(--border2);transform:translateX(2px);}
+    .thread-card::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;border-radius:3px 0 0 3px;opacity:0;transition:opacity .2s;}
+    .thread-card:hover::before{opacity:1;}
+    .tcp::before{background:var(--purple);}
+    .tct::before{background:var(--teal);}
+    .tca::before{background:var(--amber);}
+    .tcr::before{background:var(--red);}
+    .tc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px;}
+    .tc-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;flex:1;}
+    .tc-tags{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;}
+    .tag{font-size:10px;padding:2px 8px;border-radius:100px;font-family:var(--mono);}
+    .tag-p{background:rgba(124,110,247,0.1);color:var(--purple2);border:0.5px solid rgba(124,110,247,0.2);}
+    .tag-t{background:rgba(45,212,160,0.08);color:var(--teal);border:0.5px solid rgba(45,212,160,0.18);}
+    .tag-a{background:rgba(245,166,35,0.08);color:var(--amber);border:0.5px solid rgba(245,166,35,0.18);}
+    .tag-r{background:rgba(240,84,84,0.08);color:var(--red);border:0.5px solid rgba(240,84,84,0.18);}
+    .tc-preview{font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:10px;font-family:var(--mono);}
+    .tc-footer{display:flex;align-items:center;justify-content:space-between;}
+    .tc-meta{display:flex;gap:12px;}
+    .tc-stat{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;}
+    .tc-author{font-size:11px;color:var(--text3);}
+    .empty-state{text-align:center;padding:60px 20px;}
+    .empty-icon{font-size:40px;margin-bottom:14px;opacity:0.4;}
+    .empty-title{font-family:var(--display);font-size:18px;color:var(--text2);margin-bottom:8px;}
+    .empty-sub{font-size:14px;color:var(--text3);margin-bottom:20px;}
+    .empty-btn{background:var(--purple);color:#fff;border:none;border-radius:9px;padding:10px 22px;font-size:14px;font-family:var(--body);font-weight:500;cursor:pointer;transition:all 0.2s;}
+    .empty-btn:hover{background:#8f82f9;}
+    .loading-state{text-align:center;padding:40px;color:var(--text3);font-family:var(--mono);font-size:13px;}
+    .side-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+    .side-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+    .side-title i{color:var(--purple);font-size:12px;}
+    .potd-mini{background:var(--bg);border:0.5px solid var(--border2);border-radius:9px;padding:12px;margin-bottom:10px;position:relative;overflow:hidden;}
+    .potd-mini::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--teal));}
+    .potd-mini-t{font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px;}
+    .potd-mini-b{font-family:var(--mono);font-size:11px;color:var(--text3);line-height:1.5;}
+    .potd-btn{width:100%;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-family:var(--body);font-weight:500;cursor:pointer;transition:all 0.2s;}
+    .potd-btn:hover{background:#8f82f9;}
+    .room-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer;}
+    .room-item:last-child{border-bottom:none;}
+    .ri-left{display:flex;align-items:center;gap:8px;}
+    .ri-dot{width:7px;height:7px;border-radius:50%;}
+    .ri-name{font-size:13px;color:var(--text2);}
+    .ri-online{font-size:11px;color:var(--text3);}
+    .online-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);display:inline-block;animation:pulse 1.5s infinite;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    .top-user{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);}
+    .top-user:last-child{border-bottom:none;}
+    .tu-rank{font-family:var(--mono);font-size:11px;color:var(--text3);width:16px;}
+    .tu-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
+    .tu-name{font-size:12px;color:var(--text);font-weight:500;}
+    .tu-pts{font-size:11px;color:var(--text3);}
+  </style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<nav>
+  <a href="index.html" class="nav-logo"><span>C</span>onjecture Hub</a>
+  <div class="nav-links">
+    <a href="discussions.html" class="active">Discuss</a>
+    <a href="#">Rooms</a>
+    <a href="#">Problems</a>
+  </div>
+  <div class="nav-right" id="nav-right">
+    <a href="login.html" class="login-link">Log in</a>
+  </div>
+</nav>
+
+<div class="page above">
+  <div class="page-head">
+    <div class="page-title">Discussions</div>
+    <div class="page-sub">Browse problems, join threads, share your approach</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap"><i class="fa-solid fa-search"></i><input type="text" id="searchInput" placeholder="Search problems..." oninput="filterThreads()"/></div>
+    <select id="diffFilter" onchange="filterThreads()">
+      <option value="">All difficulties</option>
+      <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Elite</option>
+    </select>
+    <select id="sortFilter" onchange="loadProblems()">
+      <option value="createdAt">Most recent</option>
+      <option value="upvotes">Most upvoted</option>
+      <option value="replyCount">Most replies</option>
+    </select>
+  </div>
+
+  <div class="topic-tabs" id="topicTabs">
+    <div class="ttab active" data-topic="">All topics</div>
+    <div class="ttab" data-topic="Number Theory">Number Theory</div>
+    <div class="ttab" data-topic="Geometry">Geometry</div>
+    <div class="ttab" data-topic="Algebra">Algebra</div>
+    <div class="ttab" data-topic="Combinatorics">Combinatorics</div>
+    <div class="ttab" data-topic="Analysis">Analysis</div>
+    <div class="ttab" data-topic="Logic">Logic</div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="thread-list" id="threadList"><div class="loading-state"><i class="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Loading discussions...</div></div>
+    </div>
+    <div>
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-flame"></i> Problem of the Day</div>
+        <div class="potd-mini">
+          <div class="potd-mini-t">Find all n ≥ 1 such that...</div>
+          <div class="potd-mini-b">a₁+...+aₙ = n² and<br>1/a₁+...+1/aₙ = 1</div>
+        </div>
+        <button class="potd-btn">Join discussion →</button>
+      </div>
+      <div class="side-card">
+        <div class="side-title"><i class="fa-solid fa-layer-group"></i> Rooms</div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--purple)"></div><div class="ri-name">Olympiad Elite</div></div><div class="ri-online"><span class="online-dot"></span> 38</div></div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--teal)"></div><div class="ri-name">National Level</div></div><div class="ri-online"><span class="online-dot"></span> 61</div></div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--amber)"></div><div class="ri-name">Intermediate</div></div><div class="ri-online"><span class="online-dot"></span> 94</div></div>
+        <div class="room-item"><div class="ri-left"><div class="ri-dot" style="background:var(--red)"></div><div class="ri-name">Beginners</div></div><div class="ri-online"><span class="online-dot"></span> 112</div></div>
+      </div>
+      <div class="side-card" id="leaderboard-card">
+        <div class="side-title"><i class="fa-solid fa-trophy"></i> Top contributors</div>
+        <div id="leaderboard"><div style="font-size:12px;color:var(--text3);font-family:var(--mono)">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAtawy8WOVQODnj06DT6UecS3RLgsD5vYc",
+  authDomain:"conjecture-hub.firebaseapp.com",
+  projectId:"conjecture-hub",
+  storageBucket:"conjecture-hub.firebasestorage.app",
+  messagingSenderId:"50971221247",
+  appId:"1:50971221247:web:fea10788f0efdc9279c0ca"
+});
+const auth=firebase.auth();
+const db=firebase.firestore();
+let currentUser=null, allProblems=[], activeTopic='', unsubscribe=null;
+
+auth.onAuthStateChanged(user=>{
+  currentUser=user;
+  const nr=document.getElementById('nav-right');
+  if(user){
+    const initials=(user.displayName||user.email||'U').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    nr.innerHTML=`
+      <button class="post-btn" onclick="window.location.href='post-problem.html'"><i class="fa-solid fa-plus"></i> New problem</button>
+      <a href="profile.html" class="nav-av" title="${user.displayName||user.email}">${user.photoURL?`<img src="${user.photoURL}" alt="avatar"/>`:initials}</a>
+      <button class="logout-btn" onclick="logout()">Sign out</button>`;
+  } else {
+    nr.innerHTML=`<a href="login.html" class="login-link">Log in</a>`;
+  }
+});
+
+function logout(){auth.signOut().then(()=>window.location.href='index.html');}
+
+function timeAgo(ts){
+  if(!ts) return 'just now';
+  const s=Math.floor((Date.now()-ts.toMillis())/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+
+const tagClass={
+  'Number Theory':'tag-p','Geometry':'tag-t','Algebra':'tag-r',
+  'Combinatorics':'tag-a','Analysis':'tag-t','Logic':'tag-p'
+};
+const cardClass={
+  'Number Theory':'tcp','Geometry':'tct','Algebra':'tcr',
+  'Combinatorics':'tca','Analysis':'tct','Logic':'tcp'
+};
+
+function renderThread(id,d){
+  const tc=cardClass[d.topic]||'tcp';
+  const tg=tagClass[d.topic]||'tag-p';
+  const preview=(d.body||'').replace(/\$[^$]*\$/g,'[math]').substring(0,100)+'...';
+  return `<a href="problem.html?id=${id}" class="thread-card ${tc}">
+    <div class="tc-top">
+      <div class="tc-title">${escHtml(d.title||'Untitled')}</div>
+      <div class="tc-tags"><span class="tag ${tg}">${d.topic||'General'}</span>${d.difficulty?`<span class="tag tag-r">${d.difficulty}</span>`:''}</div>
+    </div>
+    <div class="tc-preview">${escHtml(preview)}</div>
+    <div class="tc-footer">
+      <div class="tc-meta">
+        <span class="tc-stat"><i class="fa-regular fa-comment"></i> ${d.replyCount||0}</span>
+        <span class="tc-stat"><i class="fa-solid fa-arrow-up"></i> ${d.upvotes||0}</span>
+        <span class="tc-stat"><i class="fa-regular fa-clock"></i> ${timeAgo(d.createdAt)}</span>
+      </div>
+      <div class="tc-author">${escHtml(d.authorName||'Anonymous')}</div>
+    </div>
+  </a>`;
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderThreads(data){
+  const list=document.getElementById('threadList');
+  if(!data.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">∑</div><div class="empty-title">No discussions yet</div><div class="empty-sub">Be the first to post a problem!</div><button class="empty-btn" onclick="window.location.href='${currentUser?'post-problem.html':'login.html'}'">Post a problem</button></div>`;
+    return;
+  }
+  list.innerHTML=data.map(({id,data})=>renderThread(id,data)).join('');
+}
+
+function filterThreads(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const diff=document.getElementById('diffFilter').value;
+  let filtered=allProblems.filter(({data:d})=>{
+    const matchQ=!q||(d.title||'').toLowerCase().includes(q)||(d.body||'').toLowerCase().includes(q);
+    const matchT=!activeTopic||d.topic===activeTopic;
+    const matchD=!diff||d.difficulty===diff;
+    return matchQ&&matchT&&matchD;
+  });
+  renderThreads(filtered);
+}
+
+function loadProblems(){
+  if(unsubscribe) unsubscribe();
+  const sort=document.getElementById('sortFilter').value||'createdAt';
+  let query=db.collection('problems').orderBy(sort,'desc').limit(30);
+  unsubscribe=query.onSnapshot(snap=>{
+    allProblems=snap.docs.map(d=>({id:d.id,data:d.data()}));
+    filterThreads();
+  },err=>console.error(err));
+}
+
+// Topic tabs
+document.getElementById('topicTabs').addEventListener('click',e=>{
+  const t=e.target.closest('.ttab');
+  if(!t) return;
+  document.querySelectorAll('.ttab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  activeTopic=t.dataset.topic||'';
+  filterThreads();
+});
+
+// Leaderboard
+db.collection('users').orderBy('reputation','desc').limit(5).get().then(snap=>{
+  const colors=['rgba(124,110,247,0.2)','rgba(45,212,160,0.15)','rgba(245,166,35,0.12)','rgba(240,84,84,0.1)','rgba(127,119,221,0.15)'];
+  const textColors=['#a99df8','#2dd4a0','#f5a623','#f05454','#7f77dd'];
+  if(snap.empty){document.getElementById('leaderboard').innerHTML='<div style="font-size:12px;color:var(--text3);font-family:var(--mono)">No members yet</div>';return;}
+  document.getElementById('leaderboard').innerHTML=snap.docs.map((d,i)=>{
+    const u=d.data();const init=(u.displayName||'U').substring(0,2).toUpperCase();
+    return `<div class="top-user"><div class="tu-rank">#${i+1}</div><div class="tu-av" style="background:${colors[i]};color:${textColors[i]}">${init}</div><div><div class="tu-name">${escHtml(u.displayName||'Anonymous')}</div><div class="tu-pts">${u.reputation||0} pts</div></div></div>`;
+  }).join('');
+});
+
+loadProblems();
+
+// Canvas bg
+const cv=document.getElementById('bgCanvas');const cx=cv.getContext('2d');
+function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}resize();window.addEventListener('resize',resize);
+const syms=['∑','∫','π','∞','α','β','θ','λ','Δ','ℝ','⟹','∀','∃','≠'];
+const ps=Array.from({length:32},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,s:syms[Math.floor(Math.random()*syms.length)],sz:9+Math.random()*11,sp:.1+Math.random()*.22,op:.025+Math.random()*.065,dr:(Math.random()-.5)*.13}));
+function draw(){cx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{cx.font=`${p.sz}px JetBrains Mono,monospace`;cx.fillStyle=`rgba(124,110,247,${p.op})`;cx.fillText(p.s,p.x,p.y);p.y-=p.sp;p.x+=p.dr;if(p.y<-20){p.y=cv.height+20;p.x=Math.random()*cv.width;p.s=syms[Math.floor(Math.random()*syms.length)];}});requestAnimationFrame(draw);}
+draw();
+</script>
+</body>
+</html>
